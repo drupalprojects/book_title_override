@@ -35,7 +35,7 @@ function book_title_override_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
       case 'update':
         // verify this is set and different from the base
         if (isset($node->book_title_override_override) && $node->book_title_override_override && $node->book_title_override_title != $node->title) {
-          $node->book['link_title'] = check_plain($node->book_title_override_title);
+          $node->book['link_title'] = $node->book_title_override_title;
           // commit the menu link alteration
           menu_link_save($node->book);
         }
@@ -43,7 +43,7 @@ function book_title_override_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
       case 'insert':
         // verify this is set and different from the base
         if (isset($node->book_title_override_override) && $node->book_title_override_override && $node->book_title_override_title != $node->title) {
-          $node->book['link_title'] = check_plain($node->book_title_override_title);
+          $node->book['link_title'] = $node->book_title_override_title;
           // commit the menu link alteration
           menu_link_save($node->book);
         }
