@@ -1,0 +1,13 @@
+<?php
+/**
+ * @file
+ * Installation routine for book_title_override.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function book_title_override_install() {
+  // Make sure that the book_title_override module after book module
+  db_query("UPDATE {system} SET weight = 1 WHERE name = 'book_title_override' AND type = 'module'");
+}
