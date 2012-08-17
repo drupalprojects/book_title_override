@@ -1,52 +1,52 @@
 <?php
 /*
- * Implementation of hook_form_alter().
+ * Implements hook_form_alter().
  */
 function book_title_override_form_alter(&$form, &$form_state, $form_id) {
   // only add this to the node form of content in a book
-  if ($form['#id'] == 'node-form' && (in_array($form['#node']->type,  variable_get('book_allowed_types', array('book'))) || $form['#node']->book['bid'] != 0)) {
+  if (strpos($form['#id'], 'node-form') && (in_array($form['#node']->type,   variable_get('book_allowed_types', array('book'))) || $form['#node']->book['bid'] != 0)) {
     // provide a checkbox for selecting whether or not to override things
     $form['book_title_override_override'] = array(
       '#type' => 'checkbox',
-      '#title' => 'Override book title',  
+      '#title' => 'Override book title',
       '#description' => 'Check this box to override the way this is presented in book outlines',
-      '#default_value' => ($form['#node']->title != $form['#node']->book['link_title'] && $form['#node']->title != ''),
+      '#default_value' => (isset($form['#node']->book['link_title']) && $form['#node']->title != $form['#node']->book['link_title'] && $form['#node']->title != ''),
       '#weight' => -10,
     );
     // provide a title field for the overridden title
     $form['book_title_override_title'] = array(
       '#type' => 'textfield',
-      '#title' => 'Override title',  
+      '#title' => 'Override title',
       '#description' => 'Way to present this in menus',
-      '#default_value' => $form['#node']->book['link_title'],
+      '#default_value' => isset($form['#node']->book['link_title']) ? $form['#node']->book['link_title'] : '',
       '#weight' => -10,
     );
     // add form js/css to alter display of override title
-    drupal_add_js(drupal_get_path('module', 'book_title_override') .'/js/book_title_override.js');
-    drupal_add_css(drupal_get_path('module', 'book_title_override') .'/css/book_title_override.css');
+    drupal_add_js(drupal_get_path('module', 'book_title_override') . '/js/book_title_override.js');
+    drupal_add_css(drupal_get_path('module', 'book_title_override') . '/css/book_title_override.css');
   }
 }
 
 /**
- * Implementation of hook_nodeapi().
+ * Implements hook_node_update().
  */
-function book_title_override_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
-    switch ($op) {
-      case 'update':
-        // verify this is set and different from the base
-        if (isset($node->book_title_override_override) && $node->book_title_override_override && $node->book_title_override_title != $node->title) {
-          $node->book['link_title'] = check_plain($node->book_title_override_title);
-          // commit the menu link alteration
-          menu_link_save($node->book);
-        }
-      break;
-      case 'insert':
-        // verify this is set and different from the base
-        if (isset($node->book_title_override_override) && $node->book_title_override_override && $node->book_title_override_title != $node->title) {
-          $node->book['link_title'] = check_plain($node->book_title_override_title);
-          // commit the menu link alteration
-          menu_link_save($node->book);
-        }
-      break;
-    }
+function book_title_override_node_update($node) {
+  // verify this is set and different from the base
+  if (isset($node->book_title_override_override) && isset($node->book['link_title']) && $node->book_title_override_override && $node->book_title_override_title != $node->title) {
+    $node->book['link_title'] = check_plain($node->book_title_override_title);
+    // commit the menu link alteration
+    menu_link_save($node->book);
+  }
+}
+
+/**
+ * Implements hook_node_insert().
+ */
+function book_title_override_node_insert($node) {
+  // verify this is set and different from the base
+  if (isset($node->book_title_override_override) && isset($node->book['link_title']) && $node->book_title_override_override && $node->book_title_override_title != $node->title) {
+    $node->book['link_title'] = check_plain($node->book_title_override_title);
+    // commit the menu link alteration
+    menu_link_save($node->book);
+  }
 }
