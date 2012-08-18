@@ -28,6 +28,19 @@ function book_title_override_form_alter(&$form, &$form_state, $form_id) {
 }
 
 /**
+ * Implements hook_node_load().
+ */
+function book_title_override_node_load($nodes, $types) {
+  $result = db_query("SELECT * FROM {book} b INNER JOIN {menu_links} ml ON b.mlid = ml.mlid WHERE b.nid IN (:nids)", array(':nids' =>  array_keys($nodes)), array('fetch' => PDO::FETCH_ASSOC));
+  foreach ($result as $record) {
+    if ($nodes[$record['nid']]->title != $record['link_title']) {
+      $nodes[$record['nid']]->book_title_override_title = $record['link_title'];
+      $nodes[$record['nid']]->book_title_override_override = TRUE;
+    }
+  }
+}
+
+/**
  * Implements hook_node_update().
  */
 function book_title_override_node_update($node) {
