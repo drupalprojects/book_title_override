@@ -32,6 +32,14 @@ function book_title_override_form_alter(&$form, &$form_state, $form_id) {
  */
 function book_title_override_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
     switch ($op) {
+      case 'load':
+        // load title similar to how core book module does
+        $info['book'] = db_fetch_array(db_query('SELECT * FROM {book} b INNER JOIN {menu_links} ml ON b.mlid = ml.mlid WHERE b.nid = %d', $node->nid));
+        if ($info['book'] && $node->title != $info['book']['link_title']) {
+          $node->book_title_override_title = $info['book']['link_title'];
+          $node->book_title_override_override = TRUE;
+        }
+      break;
       case 'update':
         // verify this is set and different from the base
         if (isset($node->book_title_override_override) && $node->book_title_override_override && $node->book_title_override_title != $node->title) {
