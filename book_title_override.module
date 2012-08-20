@@ -63,3 +63,82 @@ function book_title_override_node_insert($node) {
     menu_link_save($node->book);
   }
 }
+
+/**
+ * Implements hook_outline_designer_operations().
+ */
+function book_title_override_outline_designer_operations($type) {
+  switch ($type) {
+    case 'book':
+      $ops = array(
+        'book_title_override' => array(
+          'title' => t('Override title'),
+          'icon' => drupal_get_path('module', 'book_title_override') . '/images/book_title_override.png',
+          'callback' => 'book_title_override_outline_designer_override_title',
+        ),
+      );
+    break;
+    default:
+      $ops = array();
+    break;
+  }
+  return $ops;
+}
+
+/**
+ * Implements hook_outline_designer_ops_js().
+ */
+function book_title_override_outline_designer_ops_js($ajax_path) {
+  drupal_add_js(drupal_get_path('module', 'book_title_override') . '/js/book_title_override_ops.js', array('scope' => 'footer'));
+}
+
+/**
+ * Implements hook_outline_designer_form_overlay().
+ */
+function book_override_title_outline_designer_form_overlay() {
+  // Status of the override
+  $form['od_book_title_override_status'] = array(
+    '#title' => t('Override title'),
+    '#id' => 'od_book_title_override_override',
+    '#type' => 'checkbox',
+    '#description' => t('Override title'),
+    '#weight' => 0,
+    '#default_value' => FALSE,
+  );
+  // Title to set for the override
+  $form['od_book_title_override_title'] = array(
+    '#title' => t('Title'),
+    '#id' => 'od_book_title_override_title',
+    '#type' => 'textfield',
+    '#description' => t('This is the title used when presenting the book in navigation'),
+    '#weight' => 1,
+    '#default_value' => '',
+  );
+  $output = '<div id="od_book_title_override" class="od_uiscreen">' . drupal_render($form) . '</div>';
+  return $output;
+}
+/**
+ * Helper function to process the ajax callback for override title
+ */
+function book_title_override_outline_designer_override_title($nid, $override, $title) {
+  // Load node.
+  $node = node_load($nid);
+  // Verify this type can be hidden and node access rights.
+  if (isset($node->nid) && node_access('update', $node)) {
+    // set title that came across
+    $node->book_title_override_title = $title;
+    // set override status
+    $node->book_title_override_override = $override;
+    node_save($node);
+    // message based on if it was enabled or disabled
+    if ($node->book_title_override_override) {
+      return t('Book title has been overriden in navigation');
+    }
+    else {
+      return t('Book title has been reset to the page title');
+    }
+  }
+  else {
+    return FALSE;
+  }
+}
