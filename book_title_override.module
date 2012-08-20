@@ -95,13 +95,13 @@ function book_title_override_outline_designer_ops_js($ajax_path) {
 /**
  * Implements hook_outline_designer_form_overlay().
  */
-function book_override_title_outline_designer_form_overlay() {
-  // Status of the override
-  $form['od_book_title_override_status'] = array(
+function book_title_override_outline_designer_form_overlay() {
+  // Override checkbox
+  $form['od_book_title_override_override'] = array(
     '#title' => t('Override title'),
     '#id' => 'od_book_title_override_override',
     '#type' => 'checkbox',
-    '#description' => t('Override title'),
+    '#description' => t('Should the page title be different from presentation in navigation?'),
     '#weight' => 0,
     '#default_value' => FALSE,
   );
@@ -125,10 +125,10 @@ function book_title_override_outline_designer_override_title($nid, $override, $t
   $node = node_load($nid);
   // Verify this type can be hidden and node access rights.
   if (isset($node->nid) && node_access('update', $node)) {
+    // set override
+    $node->book_title_override_override = $override;
     // set title that came across
     $node->book_title_override_title = $title;
-    // set override status
-    $node->book_title_override_override = $override;
     node_save($node);
     // message based on if it was enabled or disabled
     if ($node->book_title_override_override) {
